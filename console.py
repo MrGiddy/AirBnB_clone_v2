@@ -120,12 +120,13 @@ class HBNBCommand(cmd.Cmd):
         if not args:
             print("** class name missing **")
             return
-        elif args.split(' ', 1)[0] not in HBNBCommand.classes:
-            print("** class doesn't exist **")
-            return
 
         tokens = args.split(' ')
         class_name = tokens[0]
+
+        if class_name not in HBNBCommand.classes:
+            print("** class doesn't exist **")
+            return
 
         params_dict = {}
         integer_pattern = r'^[\'"]?[-+]?\d+[\'"]?$'
@@ -133,7 +134,7 @@ class HBNBCommand(cmd.Cmd):
         # Parse the tokens
         for param in tokens[1:]:
             if "=" in param:
-                key, val = param.split("=")
+                key, val = param.split("=", 1)
                 # Remove single/double quotes from val
                 if val[0] in ('"', "'") and val[-1] == val[0]:
                     val = val[1:-1]
@@ -149,12 +150,12 @@ class HBNBCommand(cmd.Cmd):
                     val = val.replace('\\"', '"').replace('_', ' ')
                 params_dict[key] = val
 
-        if params_dict:
-            new_instance = HBNBCommand.classes[class_name]()
-            new_instance.__dict__.update(**params_dict)
-            storage.new(new_instance)
-            storage.save()
-            print(new_instance.id)
+        new_instance = HBNBCommand.classes[class_name]()
+        new_instance.__dict__.update(**params_dict)
+
+        storage.new(new_instance)
+        storage.save()
+        print(new_instance.id)
 
     def help_create(self):
         """ Help information for the create method """
