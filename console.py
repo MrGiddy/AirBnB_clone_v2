@@ -11,6 +11,7 @@ from models.city import City
 from models.amenity import Amenity
 from models.review import Review
 import re
+from os import getenv
 
 
 class HBNBCommand(cmd.Cmd):
@@ -232,17 +233,30 @@ class HBNBCommand(cmd.Cmd):
         """ Shows all objects, or all objects of a class"""
         print_list = []
 
-        if args:
-            args = args.split(' ')[0]  # remove possible trailing args
-            if args not in HBNBCommand.classes:
+        if args:  # Display objects of named class
+            class_name = args.split(' ')[0]  # remove possible trailing args
+            if class_name not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            for k, v in storage._FileStorage__objects.items():
-                if k.split('.')[0] == args:
+            if getenv('HBNB_TYPE_STORAGE') == 'db':
+                cls = HBNBCommand.classes[class_name]
+                for obj in storage.all(cls).values():
+                    if '_sa_instance_state' in obj.__dict__:
+                        del obj.__dict__['_sa_instance_state']
+                    print_list.append(str(obj))
+            else:
+                for k, v in storage._FileStorage__objects.items():
+                    if k.split('.')[0] == class_name:
+                        print_list.append(str(v))
+        else:  # Display all objects of all classes
+            if getenv('HBNB_TYPE_STORAGE') == 'db':
+                for obj in storage.all(None).values():
+                    if '_sa_instance_state' in obj.__dict__:
+                        del obj.__dict__['_sa_instance_state']
+                    print_list.append(str(obj))
+            else:
+                for v in storage._FileStorage__objects.values():
                     print_list.append(str(v))
-        else:
-            for k, v in storage._FileStorage__objects.items():
-                print_list.append(str(v))
 
         print(print_list)
 
