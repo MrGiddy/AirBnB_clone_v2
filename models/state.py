@@ -19,6 +19,7 @@ class State(BaseModel, Base):
     # for fileStorage relationship between State and City
     @property
     def cities(self):
+        """Retrieves cities matching the current state's id"""
         from models import storage
 
         # Retrieve all instances of City from storage
